@@ -1,0 +1,59 @@
+# FinTrack Configuration
+# Default for `pipeline` and `interactive`. CLI flags override when provided.
+
+# Filter: Classify SMS as transaction/non-transaction
+filters:
+  - type: sender
+    enabled: true
+
+  # Or use Ollama for smarter classification (slower on large datasets)
+  # - type: ollama
+  #   model: gemma4:e4b
+  #   workers: 4
+  #   enabled: false
+
+# Parser: Parse transaction SMS to LedgerRow
+parsers:
+  - type: ollama
+    model: gemma4:e4b
+    enabled: true
+    fallback: regex
+
+  # Or use regex only (NRB, Dhaka Bank, DBBL, bKash; fast, no LLM)
+  # - type: regex
+  #   enabled: false
+
+# Input Sources
+sources:
+  - type: google_sheets
+    sheet_url: "${GOOGLE_SHEET_URL}"
+    credentials: "${GOOGLE_CREDENTIALS:-credentials.json}"
+
+  # Or use CSV
+  # - type: csv
+  #   path: "data.csv"
+
+# Output Formats
+outputs:
+  - type: excel
+    enabled: true
+  - type: json
+    enabled: false
+
+# Notifications (plugin exists; CLI does not send yet)
+notifications:
+  channels:
+    - type: telegram
+      enabled: false
+      bot_token: "${TELEGRAM_BOT_TOKEN}"
+      chat_id: "${TELEGRAM_CHAT_ID}"
+
+# Forecasting
+forecasting:
+  model: linear  # linear or llm
+  periods: 3
+
+# Analytics
+analytics:
+  enabled: true
+  anomaly_threshold: 5000  # Flag transactions above this amount
